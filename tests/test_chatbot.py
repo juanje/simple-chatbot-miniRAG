@@ -1,5 +1,12 @@
 """Tests for the main chatbot module."""
 
+import json
+import tempfile
+from pathlib import Path
+from unittest.mock import Mock, patch
+
+import pytest
+
 from simple_chatbot.chatbot import SimpleChatbot
 from simple_chatbot.config import ChatbotConfig
 from simple_chatbot.llm_client import OllamaConnectionError, ModelNotFoundError
@@ -220,3 +227,102 @@ class TestSimpleChatbot:
 
         assert "I'm sorry, I encountered an error" in response
         assert "Model not found" in response
+
+
+@pytest.fixture
+def temp_knowledge_file():
+    """Create a temporary knowledge file for testing with fictional universe."""
+    knowledge_data = {
+        "character_aris_thorne": {
+            "keywords": ["Aris Thorne", "aris", "thorne", "xenobotanist", "scientist"],
+            "content": "Dr. Aris Thorne is the lead xenobotanist on the Aethelgard expedition.",
+            "category": "character"
+        },
+        "location_aethelgard": {
+            "keywords": ["aethelgard", "planet", "world", "violet", "xylos"],
+            "content": "Aethelgard is a terrestrial exoplanet with a violet sky.",
+            "category": "location"
+        }
+    }
+    
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
+        json.dump(knowledge_data, f)
+        temp_file = f.name
+
+    yield temp_file
+
+    # Cleanup
+    Path(temp_file).unlink(missing_ok=True)
+
+
+class TestSimpleChatbotRAG:
+    """Test cases for SimpleChatbot RAG functionality."""
+
+    def test_initialization_with_rag_enabled(self, mocker, temp_knowledge_file):
+        """Test chatbot initialization with RAG enabled."""
+        mock_ollama_client = mocker.patch("simple_chatbot.chatbot.OllamaClient")
+        
+        config = ChatbotConfig(
+            rag_enabled=True,
+            knowledge_file=temp_knowledge_file
+        )
+        
+        chatbot = SimpleChatbot(config)
+        
+        assert chatbot.knowledge_base is not None
+        assert chatbot.knowledge_base.enabled
+        assert len(chatbot.knowledge_base.knowledge_data) == 2
+
+    def test_get_rag_context(self, mocker, temp_knowledge_file):
+        """Test RAG context retrieval method."""
+        mock_ollama_client = mocker.patch("simple_chatbot.chatbot.OllamaClient")
+        
+        config = ChatbotConfig(
+            rag_enabled=True,
+            knowledge_file=temp_knowledge_file
+        )
+        
+        chatbot = SimpleChatbot(config)
+        
+        # Test with relevant query
+        context = chatbot._get_rag_context("Who is Dr. Aris Thorne?")
+        assert context
+        assert "[CONTEXTO RAG" in context
+        assert "xenobotanist" in context
+
+        # Test with non-relevant query
+        context = chatbot._get_rag_context("What is the weather today?")
+        assert context == ""  # No relevant knowledge found
+
+    def test_conversation_stats_with_rag(self, mocker, temp_knowledge_file):
+        """Test conversation statistics include RAG information."""
+        mock_ollama_client = mocker.patch("simple_chatbot.chatbot.OllamaClient")
+        
+        config = ChatbotConfig(
+            rag_enabled=True,
+            knowledge_file=temp_knowledge_file
+        )
+        
+        chatbot = SimpleChatbot(config)
+        stats = chatbot.get_conversation_stats()
+        
+        assert "rag_enabled" in stats
+        assert stats["rag_enabled"] is True
+        assert "knowledge_entries" in stats
+        assert stats["knowledge_entries"] == 2
+
+    def test_search_knowledge(self, mocker, temp_knowledge_file):
+        """Test knowledge search functionality."""
+        mock_ollama_client = mocker.patch("simple_chatbot.chatbot.OllamaClient")
+        
+        config = ChatbotConfig(
+            rag_enabled=True,
+            knowledge_file=temp_knowledge_file
+        )
+        
+        chatbot = SimpleChatbot(config)
+        
+        # Test search
+        results = chatbot.search_knowledge("aris thorne scientist")
+        assert len(results) > 0
+        assert results[0].entry_id == "character_aris_thorne"

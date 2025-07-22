@@ -1,16 +1,29 @@
-# Simple Chatbot
+# Simple Chatbot with RAG
 
-A simple chatbot implementation using **LangChain** and **Ollama** for learning purposes. This project demonstrates how to build a conversational AI application with local LLM models.
+An educational extension of the [Simple Chatbot](https://github.com/juanje/simple-chatbot) project that demonstrates **RAG (Retrieval-Augmented Generation)** implementation for learning purposes.
 
-## Features
+> **📚 For basic chatbot functionality**, refer to the [original project](https://github.com/juanje/simple-chatbot). This repository focuses specifically on **adding RAG capabilities** to enhance responses with relevant knowledge retrieval.
 
-- 🤖 **Local LLM Integration**: Uses Ollama for running models locally
-- 💬 **Conversation Memory**: Maintains conversation history with configurable limits
-- ⚙️ **Configurable**: Easy configuration via environment variables or direct parameters
-- 🎨 **Beautiful CLI**: Rich terminal interface with colors and formatting
-- 🧪 **Well Tested**: Comprehensive test suite with >90% coverage
-- 📝 **Type Safe**: Full type annotations with mypy support
-- 🛠️ **Modern Python**: Built with Python 3.10+ and modern tools
+## 🎯 What's New: RAG Features
+
+This project extends the base chatbot with:
+
+- 📖 **Simple RAG Implementation**: JSON-based knowledge base with keyword matching
+- 🔍 **Knowledge Retrieval**: Automatic context injection based on user queries  
+- 🎭 **Fictional Universe**: Custom knowledge base with original content (Aethelgard universe)
+- 🧪 **Educational Focus**: Learn RAG concepts without complex vector databases
+- 🛠️ **CLI Extensions**: New commands for knowledge exploration (`/search`, `/knowledge`)
+- 📊 **RAG Analytics**: Statistics and insights into knowledge retrieval
+
+## 🔬 RAG Learning Objectives
+
+This implementation helps you understand:
+
+- **How RAG works**: Retrieval + Augmentation + Generation pipeline
+- **Context injection**: Adding relevant information to LLM prompts
+- **Knowledge management**: Organizing and searching structured data
+- **Simple vs Complex RAG**: Building foundations before advanced implementations
+- **Testing RAG systems**: Ensuring retrieval quality and relevance
 
 ## Prerequisites
 
@@ -18,308 +31,345 @@ A simple chatbot implementation using **LangChain** and **Ollama** for learning 
 - **Ollama** installed and running locally
 - At least one Ollama model downloaded (e.g., `llama2`, `mistral`)
 
-### Installing Ollama
-
-1. Install Ollama from [https://ollama.ai](https://ollama.ai)
-2. Start the Ollama service:
-   ```bash
-   ollama serve
-   ```
-3. Download a model:
-   ```bash
-   ollama pull llama2
-   # or
-   ollama pull mistral
-   ```
+> **📋 For detailed Ollama setup**, see the [original project documentation](https://github.com/juanje/simple-chatbot#prerequisites).
 
 ## Installation
 
-1. **Clone the repository:**
+1. **Clone this repository:**
    ```bash
-   git clone <repository-url>
-   cd simple-chatbot
+   git clone <this-repository-url>
+   cd simple-chatbot-miniRAG
    ```
 
-2. **Create and activate virtual environment:**
+2. **Setup environment** (same as original project):
    ```bash
-   # Install uv if you haven't already
    pip install uv
-   
-   # Create virtual environment
    uv venv
-   
-   # Activate virtual environment
-   source .venv/bin/activate  # On macOS/Linux
-   # .venv\Scripts\activate   # On Windows
-   ```
-
-3. **Install dependencies:**
-   ```bash
-   # Install project dependencies
-   uv pip install -e .
-   
-   # Install development dependencies (optional)
+   source .venv/bin/activate  # macOS/Linux
    uv pip install -e ".[dev]"
    ```
 
-4. **Verify installation:**
+3. **Verify RAG functionality:**
    ```bash
-   uv run chatbot --help
+   uv run chatbot --help  # Should show RAG options
    ```
 
-## Usage
+## 🚀 RAG Usage Examples
 
-### Basic Usage
+### Testing RAG vs Non-RAG
 
-Start the chatbot with default settings:
-
+**Without RAG** (baseline behavior):
 ```bash
-uv run chatbot
+uv run chatbot --no-rag
+# Ask: "Who is Dr. Aris Thorne?"
+# Result: Generic response or "I don't know"
 ```
 
-### Custom Model and Settings
-
+**With RAG** (enhanced with knowledge):
 ```bash
-# Standard usage with custom model
-uv run chatbot --model mistral --temperature 0.5 --max-tokens 3000
-
-# For detailed analysis and long responses
-uv run chatbot --model mistral --long-responses
-
-# For debugging connection issues
 uv run chatbot --debug
+# Ask: "Who is Dr. Aris Thorne?" 
+# Result: Detailed info about the xenobotanist from Aethelgard
 ```
 
-### All Available Options
+### RAG-Specific Options
+
+- `--no-rag`: Disable RAG functionality for comparison
+- `--knowledge-file`: Custom knowledge base file (default: `data/knowledge.json`)
+- `--debug`: See RAG retrieval in action
+
+### New Interactive Commands
+
+Inside the chatbot, try these RAG commands:
+- `/knowledge` - View knowledge base statistics
+- `/search <query>` - Search knowledge manually
+- `/categories` - List available knowledge categories  
+- `/reload` - Reload knowledge base from file
+
+### Perfect RAG Test Queries
+
+Try these questions to see RAG in action:
+```
+"Who is Dr. Aris Thorne?"
+"What is Aethelgard?"
+"Tell me about Operation Grasping Hand"
+"How do Sylvans communicate?"
+"What is Xylos crystal?"
+```
+
+## 🧠 How the RAG Implementation Works
+
+### 1. Knowledge Base Structure
+
+```json
+{
+  "character_aris_thorne": {
+    "keywords": ["Aris Thorne", "aris", "thorne", "xenobotanist", "scientist"],
+    "content": "Dr. Aris Thorne is the lead xenobotanist...",
+    "category": "character"
+  }
+}
+```
+
+### 2. RAG Pipeline
+
+1. **Query Analysis**: Extract keywords from user input
+2. **Knowledge Retrieval**: Match keywords against knowledge base
+3. **Context Injection**: Add relevant entries to LLM prompt
+4. **Enhanced Generation**: LLM responds with retrieved context
+
+### 3. Key Components Added
+
+- `knowledge_base.py`: Core RAG functionality
+- `data/knowledge.json`: Fictional universe knowledge
+- RAG configuration in `config.py`
+- CLI extensions for knowledge exploration
+
+## 📚 Knowledge Base: Aethelgard Universe
+
+This project includes a **fictional sci-fi universe** to ensure RAG testing:
+
+- **Characters**: Dr. Aris Thorne (xenobotanist), Kaelen Vance (security chief)
+- **Locations**: Aethelgard (exoplanet), Crystal Spire (Xylos monument)  
+- **Species**: Sylvans (sentient plant aliens)
+- **Events**: Bloom of Whispers (first contact), Operation Grasping Hand
+- **Technology**: Xylos crystals, Bio-Signaling communication
+
+> **Why fictional content?** Ensures the LLM has no prior knowledge, making RAG effects clearly visible.
+
+## 🔍 Differences from Original Project
+
+| Feature | Original Project | This Project (with RAG) |
+|---------|-----------------|-------------------------|
+| **Knowledge Source** | LLM training data only | LLM + Custom knowledge base |
+| **Response Quality** | General knowledge | Enhanced with specific context |
+| **Temperature Default** | 0.7 (creative) | 0.3 (more deterministic) |
+| **CLI Commands** | Basic chat commands | + `/knowledge`, `/search`, `/categories` |
+| **Configuration** | Basic LLM settings | + RAG settings (`--no-rag`, `--knowledge-file`) |
+| **Testing Focus** | General chatbot behavior | RAG retrieval and relevance |
+| **Knowledge Updates** | Static (training cutoff) | Dynamic (reload knowledge file) |
+
+## ⚙️ RAG Configuration
+
+New environment variables for RAG:
 
 ```bash
-uv run chatbot --help
-```
-
-Available options:
-- `--model`: Ollama model to use (default: llama2)
-- `--temperature`: Temperature for text generation (0.0 to 1.0, default: 0.7)
-- `--max-tokens`: Maximum tokens to generate (default: 2000)
-- `--long-responses`: Allow very long responses (sets max-tokens to 4000)
-- `--ollama-url`: Ollama base URL (default: http://localhost:11434)
-- `--memory-limit`: Conversation memory limit (default: 10 message pairs)
-- `--debug`: Enable debug logging
-
-### Interactive Commands
-
-Once the chatbot is running, you can use these commands (all commands require a `/` prefix):
-
-- `/quit`, `/exit`, or `/bye`: End the conversation
-- `/reset`: Clear conversation history
-- `/stats`: Show conversation statistics
-- `/history`: Display conversation history
-- `/help`: Show help message
-
-### Navigation Features
-
-- **↑↓ Arrow Keys**: Navigate through command history
-- **Ctrl+L**: Clear screen
-- **Ctrl+C**: Interrupt current operation
-- **Ctrl+A/E**: Move to beginning/end of line
-
-**Note:** Commands require a `/` prefix to avoid accidental activation during normal conversation.
-
-### Environment Variables
-
-You can configure the chatbot using environment variables:
-
-```bash
-export OLLAMA_BASE_URL="http://localhost:11434"
-export OLLAMA_MODEL="mistral"
-export CHATBOT_TEMPERATURE="0.5"
-export CHATBOT_MAX_TOKENS="3000"
-export CHATBOT_SYSTEM_PROMPT="You are a helpful coding assistant."
-export CONVERSATION_MEMORY_LIMIT="20"
-```
-
-Create a `.env` file for persistent configuration:
-
-```env
-OLLAMA_MODEL=mistral
-CHATBOT_TEMPERATURE=0.5
-CHATBOT_SYSTEM_PROMPT=You are a helpful and knowledgeable assistant.
+export RAG_ENABLED="true"                    # Enable/disable RAG
+export RAG_KNOWLEDGE_FILE="data/knowledge.json"  # Knowledge file path
+export RAG_MAX_RESULTS="3"                   # Max knowledge entries per query
+export RAG_MIN_RELEVANCE="0.1"              # Minimum relevance threshold
 ```
 
 ## Project Structure
 
 ```
-simple-chatbot/
+simple-chatbot-miniRAG/
 ├── src/simple_chatbot/          # Main package
 │   ├── __init__.py             # Package initialization
-│   ├── config.py               # Configuration management
+│   ├── config.py               # Configuration (+ RAG settings)
 │   ├── llm_client.py           # Ollama client wrapper
 │   ├── memory.py               # Conversation memory
-│   ├── chatbot.py              # Main chatbot logic
-│   └── cli.py                  # Command-line interface
-├── tests/                      # Test suite
+│   ├── chatbot.py              # Main chatbot logic (+ RAG integration)
+│   ├── knowledge_base.py       # 🆕 RAG knowledge management
+│   └── cli.py                  # CLI (+ RAG commands)
+├── data/                       # 🆕 Knowledge base
+│   └── knowledge.json          # 🆕 Aethelgard universe data
+├── tests/                      # Test suite (updated for RAG)
 │   ├── test_config.py          # Configuration tests
 │   ├── test_memory.py          # Memory tests
-│   └── test_chatbot.py         # Chatbot tests
+│   ├── test_chatbot.py         # Chatbot tests (+ RAG tests)
+│   └── test_knowledge_base.py  # 🆕 RAG functionality tests
 ├── pyproject.toml              # Project configuration
 └── README.md                   # This file
 ```
 
-## Development
+**🆕 New files for RAG:**
+- `knowledge_base.py`: Core RAG implementation
+- `data/knowledge.json`: Fictional knowledge base
+- `test_knowledge_base.py`: RAG testing suite
 
-### Setting Up Development Environment
+## 🧪 Testing RAG Functionality
 
-1. **Create and activate virtual environment:**
-   ```bash
-   # Create virtual environment (if not already created)
-   uv venv
-   
-   # Activate virtual environment
-   source .venv/bin/activate  # On macOS/Linux
-   # .venv\Scripts\activate   # On Windows
-   ```
-
-2. **Install development dependencies:**
-   ```bash
-   uv pip install -e ".[dev]"
-   ```
-
-3. **Run tests:**
-   ```bash
-   uv run pytest
-   ```
-
-4. **Run tests with coverage:**
-   ```bash
-   uv run pytest --cov=simple_chatbot --cov-report=html
-   ```
-
-5. **Code formatting and linting:**
-   ```bash
-   uv run ruff check .
-   uv run ruff format .
-   ```
-
-6. **Type checking:**
-   ```bash
-   uv run mypy src/simple_chatbot
-   ```
-
-### Running Tests
+### RAG-Specific Tests
 
 ```bash
-# Run all tests
-uv run pytest
+# Test knowledge base functionality
+uv run pytest tests/test_knowledge_base.py -v
 
-# Run specific test file
-uv run pytest tests/test_chatbot.py
+# Test RAG integration in chatbot
+uv run pytest tests/test_chatbot.py::TestSimpleChatbotRAG -v
 
-# Run with verbose output
-uv run pytest -v
-
-# Run with coverage
-uv run pytest --cov=simple_chatbot
+# All tests (should be 60 passing)
+uv run pytest tests/ -v
 ```
 
-## Programming and Learning Examples
+### Manual RAG Testing
 
-### Basic Programmatic Usage
+```python
+# Test knowledge retrieval directly
+from simple_chatbot.knowledge_base import SimpleKnowledgeBase
+
+kb = SimpleKnowledgeBase('data/knowledge.json')
+results = kb.search("Who is Dr. Aris Thorne?")
+print(f"Found {len(results)} results")
+```
+
+## 🔧 Development
+
+> **🔗 For general development setup**, see the [original project](https://github.com/juanje/simple-chatbot#development).
+
+**RAG-specific development:**
+
+```bash
+# Install with dev dependencies
+uv pip install -e ".[dev]"
+
+# Test knowledge base changes
+uv run pytest tests/test_knowledge_base.py
+
+# Test with custom knowledge file
+uv run chatbot --knowledge-file my_custom_knowledge.json
+```
+
+## 💡 Learning Examples
+
+### RAG Implementation Study
 
 ```python
 from simple_chatbot import SimpleChatbot, ChatbotConfig
+from simple_chatbot.knowledge_base import SimpleKnowledgeBase
 
-# Create custom configuration
-config = ChatbotConfig(
-    model_name="mistral",
-    temperature=0.5,
-    system_prompt="You are a helpful coding assistant."
-)
+# Compare responses with/without RAG
+config_no_rag = ChatbotConfig(rag_enabled=False)
+config_with_rag = ChatbotConfig(rag_enabled=True)
 
-# Initialize chatbot
-chatbot = SimpleChatbot(config)
+chatbot_baseline = SimpleChatbot(config_no_rag)
+chatbot_enhanced = SimpleChatbot(config_with_rag)
 
-# Have a conversation
-response = chatbot.chat("Hello! Can you help me with Python?")
-print(response)
+query = "Who is Dr. Aris Thorne?"
 
-response = chatbot.chat("What are list comprehensions?")
-print(response)
+# Baseline response (no RAG)
+response1 = chatbot_baseline.chat(query)
+print("Without RAG:", response1)
 
-# Check conversation stats
-stats = chatbot.get_conversation_stats()
-print(f"Total messages: {stats['total_messages']}")
+# Enhanced response (with RAG)
+response2 = chatbot_enhanced.chat(query)
+print("With RAG:", response2)
 ```
 
-### Custom Memory Management
+### Knowledge Base Exploration
 
 ```python
-from simple_chatbot.memory import ConversationMemory
+from simple_chatbot.knowledge_base import SimpleKnowledgeBase
 
-# Create memory with custom limit
-memory = ConversationMemory(memory_limit=5)
+# Load and explore knowledge
+kb = SimpleKnowledgeBase('data/knowledge.json')
 
-# Add messages
-memory.add_user_message("Hello")
-memory.add_assistant_message("Hi there!")
+# Get statistics
+stats = kb.get_stats()
+print(f"Knowledge entries: {stats['total_entries']}")
+print(f"Categories: {stats['categories']}")
 
-# Get formatted conversation
-history = memory.format_for_prompt()
-print(history)
+# Search examples
+results = kb.search("scientist xenobotanist")
+for result in results:
+    print(f"Found: {result.entry_id} (relevance: {result.relevance_score:.2f})")
+
+# Format for LLM context
+context = kb.format_context(results)
+print("Context for LLM:", context)
 ```
 
-### Error Handling
+> **📖 For basic chatbot examples**, see the [original project documentation](https://github.com/juanje/simple-chatbot#programming-and-learning-examples).
 
-```python
-from simple_chatbot import SimpleChatbot
-from simple_chatbot.llm_client import OllamaConnectionError, ModelNotFoundError
+## 🏗️ RAG Architecture
 
-try:
-    chatbot = SimpleChatbot()
-    response = chatbot.chat("Hello")
-except OllamaConnectionError as e:
-    print(f"Connection error: {e}")
-except ModelNotFoundError as e:
-    print(f"Model not found: {e}")
+The RAG implementation adds a **Knowledge Layer** to the original architecture:
+
+1. **Configuration Layer** (`config.py`): Handles all configuration + RAG settings
+2. **LLM Client Layer** (`llm_client.py`): Abstracts Ollama integration *(unchanged)*
+3. **Memory Layer** (`memory.py`): Manages conversation history *(unchanged)*
+4. **🆕 Knowledge Layer** (`knowledge_base.py`): RAG knowledge management
+5. **Core Logic** (`chatbot.py`): Orchestrates conversation flow + RAG integration
+6. **Interface Layer** (`cli.py`): Provides user interaction + knowledge commands
+
+### RAG Data Flow
+
+```
+User Query → Keyword Extraction → Knowledge Search → Context Injection → LLM → Enhanced Response
 ```
 
-## Architecture
+> **🔗 For detailed base architecture**, see [original project](https://github.com/juanje/simple-chatbot#architecture).
 
-The project follows a modular architecture:
+## 🚀 Quick Reference
 
-1. **Configuration Layer** (`config.py`): Handles all configuration with validation
-2. **LLM Client Layer** (`llm_client.py`): Abstracts Ollama integration
-3. **Memory Layer** (`memory.py`): Manages conversation history
-4. **Core Logic** (`chatbot.py`): Orchestrates the conversation flow
-5. **Interface Layer** (`cli.py`): Provides user interaction
-
-## Quick Reference
-
-### Essential Commands
+### RAG Testing Commands
 
 ```bash
-# Setup (one time)
-uv venv                              # Create virtual environment
-source .venv/bin/activate            # Activate virtual environment (macOS/Linux)
-# .venv\Scripts\activate             # Activate virtual environment (Windows)
-uv pip install -e ".[dev]"          # Install project with dev dependencies
+# Setup
+uv pip install -e ".[dev]"          # Install with development dependencies
 
-# Daily development
-uv run pytest tests/ -v             # Run tests with verbose output
-uv run pytest --cov=simple_chatbot  # Run tests with coverage
-uv run chatbot                       # Run the chatbot (now with history!)
-uv run chatbot --long-responses      # Run with extended responses
-uv run ruff check .                  # Check code formatting
-uv run ruff format .                 # Format code
-uv run mypy src/simple_chatbot       # Type checking
+# Compare RAG vs No-RAG
+uv run chatbot --no-rag              # Baseline chatbot (original behavior)
+uv run chatbot --debug               # RAG-enhanced with debug output
+
+# Test specific RAG features
+uv run chatbot                       # Normal RAG-enhanced chatbot
+# Then try: /search Dr. Aris Thorne
+# Then try: /knowledge
+# Then try: /categories
+
+# Development
+uv run pytest tests/test_knowledge_base.py -v    # Test RAG functionality
+uv run pytest tests/ -v                          # All tests (60 should pass)
 ```
 
-## Contributing
+### Perfect RAG Demo
 
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests for new functionality
-5. Ensure all tests pass and code is formatted
-6. Submit a pull request
+1. **Start without RAG**: `uv run chatbot --no-rag`
+2. **Ask**: "Who is Dr. Aris Thorne?"
+3. **Note response**: Generic or "I don't know"
+4. **Start with RAG**: `uv run chatbot --debug`  
+5. **Ask same question**: Should get detailed information about the xenobotanist
+6. **Observe debug**: Shows knowledge retrieval in action
+
+## 🤝 Contributing
+
+This project focuses on **educational RAG implementation**. Contributions welcome for:
+
+- Additional knowledge base examples
+- Improved keyword extraction algorithms  
+- Better relevance scoring methods
+- More comprehensive tests
+- Documentation improvements
+
+> **🔗 For contributing to the base chatbot**, see [original project](https://github.com/juanje/simple-chatbot).
+
+## 🎓 Educational Goals
+
+This project teaches RAG concepts through:
+
+- **Simple Implementation**: No complex vector databases or embeddings
+- **Clear Code Structure**: Easy to understand and modify
+- **Comprehensive Testing**: Learn to test RAG systems properly
+- **Real Comparisons**: See exactly what RAG adds vs baseline
+- **Fictional Data**: Eliminate LLM prior knowledge confusion
+
+### 🧠 RAG Concepts Demonstrated
+
+- **Retrieval**: Keyword-based knowledge search
+- **Augmentation**: Context injection into prompts  
+- **Generation**: Enhanced LLM responses
+- **Evaluation**: Relevance scoring and filtering
+- **Integration**: Adding RAG to existing chat systems
+
+## 📊 Project Metrics
+
+- **60 tests** covering both original and RAG functionality
+- **10 knowledge entries** in fictional universe
+- **4 categories** of knowledge (character, location, lore, etc.)
+- **5+ new CLI commands** for knowledge exploration
+- **100% test coverage** for RAG components
 
 ## Development Methodology
 
@@ -347,35 +397,40 @@ This project was developed using **"vibe coding"** methodology with AI assistanc
 ### 📝 Transparency
 This approach represents a modern software development workflow where AI tools augment human creativity and expertise rather than replace it. The final code quality results from the synergy between AI capabilities and human judgment.
 
-## Troubleshooting
+## 🔧 Troubleshooting
 
-### Common Issues
+### RAG-Specific Issues
 
-**"Connection refused" error:**
-- Ensure Ollama is running: `ollama serve`
-- Check if the service is accessible: `curl http://localhost:11434`
+**RAG not working (same responses with/without --no-rag):**
+- Check knowledge file exists: `ls data/knowledge.json`
+- Verify keywords match: Use `/search <query>` to test manually
+- Enable debug: `--debug` to see retrieval logs
 
-**"Model not found" error:**
-- Download the model: `ollama pull llama2`
-- List available models: `ollama list`
+**No knowledge found:**
+- Try `/knowledge` to see database stats
+- Use `/categories` to see available topics
+- Test with exact keywords from knowledge base
 
-**Performance issues:**
-- Reduce max_tokens for faster responses
-- Use smaller models (e.g., `orca-mini` instead of `llama2`)
-- Adjust temperature for more focused responses
+**Knowledge file errors:**
+- Validate JSON format: `python -m json.tool data/knowledge.json`
+- Check file permissions: `ls -la data/knowledge.json`
 
-**Incomplete or cut-off responses:**
-- Increase max_tokens: `chatbot --max-tokens 4000`
-- Use long responses flag: `chatbot --long-responses`
-- Set environment variable: `export CHATBOT_MAX_TOKENS=4000`
+### General Issues
+> **🔗 For Ollama and basic setup issues**, see [original project troubleshooting](https://github.com/juanje/simple-chatbot#troubleshooting).
 
-## License
+## 📚 Learning Resources
 
-This project is intended for educational purposes. Please refer to the licenses of the underlying dependencies (LangChain, Ollama) for their respective terms.
+### RAG and Information Retrieval
+- [RAG Papers and Implementations](https://github.com/topics/retrieval-augmented-generation)
+- [Information Retrieval Basics](https://en.wikipedia.org/wiki/Information_retrieval)
+- [Vector Databases (for advanced RAG)](https://www.pinecone.io/learn/vector-database/)
 
-## Learning Resources
-
+### Original Project Resources
+- [Base Chatbot Project](https://github.com/juanje/simple-chatbot)
 - [LangChain Documentation](https://python.langchain.com/)
 - [Ollama Documentation](https://ollama.ai/docs)
-- [Python Type Hints](https://docs.python.org/3/library/typing.html)
-- [Modern Python Packaging](https://packaging.python.org/) 
+
+## 📄 License
+
+Educational project based on [Simple Chatbot](https://github.com/juanje/simple-chatbot). 
+Licensed for learning and demonstration purposes. 

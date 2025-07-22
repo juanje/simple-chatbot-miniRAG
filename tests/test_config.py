@@ -15,7 +15,7 @@ class TestChatbotConfig:
 
         assert config.ollama_base_url == "http://localhost:11434"
         assert config.model_name == "llama2"
-        assert config.temperature == 0.7
+        assert config.temperature == 0.3
         assert config.max_tokens == 2000
         assert (
             config.system_prompt

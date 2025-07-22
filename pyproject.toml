@@ -2,10 +2,13 @@
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
+[tool.hatch.build.targets.wheel]
+packages = ["src/simple_chatbot"]
+
 [project]
-name = "simple-chatbot"
-version = "0.1.0"
-description = "A simple chatbot using LangChain and Ollama for learning purposes"
+name = "simple-chatbot-mini-RAG"
+version = "0.2.0"
+description = "A simple chatbot with mini RAG (Retrieval-Augmented Generation) using LangChain and Ollama for learning purposes"
 authors = [
     {name = "Juanje Ojeda", email = "juanje@redhat.com"},
 ]

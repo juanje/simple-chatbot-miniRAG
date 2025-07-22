@@ -13,7 +13,7 @@ class ChatbotConfig(BaseModel):
     """Configuration class for the Simple Chatbot.
 
     This class handles all configuration parameters for the chatbot,
-    including Ollama connection settings and model parameters.
+    including Ollama connection settings, model parameters, and RAG configuration.
 
     Attributes:
         ollama_base_url: Base URL for Ollama API (default: http://localhost:11434)
@@ -22,6 +22,10 @@ class ChatbotConfig(BaseModel):
         max_tokens: Maximum number of tokens to generate
         system_prompt: System prompt to set chatbot behavior
         conversation_memory_limit: Maximum number of messages to keep in memory
+        rag_enabled: Whether to enable RAG functionality
+        knowledge_file: Path to the knowledge base JSON file
+        rag_max_results: Maximum number of RAG results to include in context
+        rag_min_relevance: Minimum relevance score for RAG results
     """
 
     ollama_base_url: str = Field(
@@ -33,7 +37,7 @@ class ChatbotConfig(BaseModel):
     )
 
     temperature: float = Field(
-        default=0.7, ge=0.0, le=1.0, description="Temperature for text generation"
+        default=0.3, ge=0.0, le=1.0, description="Temperature for text generation"
     )
 
     max_tokens: int = Field(
@@ -50,6 +54,23 @@ class ChatbotConfig(BaseModel):
         default=10,
         gt=0,
         description="Maximum number of message pairs to keep in conversation memory",
+    )
+
+    # RAG Configuration
+    rag_enabled: bool = Field(
+        default=True, description="Whether to enable RAG functionality"
+    )
+
+    knowledge_file: str = Field(
+        default="data/knowledge.json", description="Path to the knowledge base JSON file"
+    )
+
+    rag_max_results: int = Field(
+        default=3, ge=1, le=10, description="Maximum number of RAG results to include in context"
+    )
+
+    rag_min_relevance: float = Field(
+        default=0.1, ge=0.0, le=1.0, description="Minimum relevance score for RAG results"
     )
 
     @classmethod
@@ -70,4 +91,9 @@ class ChatbotConfig(BaseModel):
                 "Respond in a friendly and informative manner.",
             ),
             conversation_memory_limit=int(os.getenv("CONVERSATION_MEMORY_LIMIT", "10")),
+            # RAG Configuration
+            rag_enabled=os.getenv("RAG_ENABLED", "true").lower() in ("true", "1", "yes"),
+            knowledge_file=os.getenv("RAG_KNOWLEDGE_FILE", "data/knowledge.json"),
+            rag_max_results=int(os.getenv("RAG_MAX_RESULTS", "3")),
+            rag_min_relevance=float(os.getenv("RAG_MIN_RELEVANCE", "0.1")),
         )

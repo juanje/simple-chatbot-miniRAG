@@ -1,272 +1,385 @@
-# Simple Chatbot - Especificaciones Técnicas
+# Simple Chatbot con RAG - Especificaciones Técnicas
 
-## 📋 Resumen del Proyecto
+## Resumen del Proyecto
 
-**Simple Chatbot** es una aplicación de línea de comandos que implementa un chatbot conversacional utilizando LangChain y Ollama. El proyecto está diseñado con fines educativos y para demostrar las mejores prácticas en el desarrollo de aplicaciones Python modernas con LLMs locales.
+Este documento describe las especificaciones técnicas de una **extensión RAG (Retrieval-Augmented Generation)** del proyecto [Simple Chatbot](https://github.com/juanje/simple-chatbot). Esta implementación educativa demuestra cómo añadir capacidades de recuperación de conocimiento para mejorar las respuestas del chatbot con contexto relevante.
 
-## 🎯 Objetivos
+> **📚 Para especificaciones del chatbot base**, consulta la [documentación del proyecto original](https://github.com/juanje/simple-chatbot). Este documento se enfoca en **detalles técnicos específicos de RAG** e implementación.
 
-- **Educativo**: Demostrar la implementación de un chatbot usando tecnologías modernas
-- **Modular**: Arquitectura limpia con separación de responsabilidades
-- **Fácil de usar**: Interfaz CLI intuitiva con comandos especiales
-- **Configurable**: Parámetros ajustables para diferentes casos de uso
-- **Robusto**: Manejo de errores y validaciones completas
+## Características de Mejora RAG
 
-## 🏗️ Arquitectura
+### 1. Gestión de Base de Conocimiento
+- **Formato de Almacenamiento**: Entradas de conocimiento basadas en JSON
+- **Estructura**: Palabras clave, contenido, categorías y metadatos
+- **Contenido**: Universo ficticio de Aethelgard para pruebas
+- **Búsqueda**: Sistema de recuperación basado en palabras clave
 
-### Estructura del Proyecto
+### 2. Sistema de Recuperación
+- **Procesamiento de Consultas**: Extracción de palabras clave de la entrada del usuario
+- **Puntuación de Relevancia**: Cálculo de relevancia basado en ratios simples
+- **Filtrado**: Configuración de umbral mínimo de relevancia
+- **Limitación de Resultados**: Número máximo configurable de resultados por consulta
+
+### 3. Aumentación de Contexto
+- **Inyección de Prompts**: Añadir conocimiento recuperado al contexto del LLM
+- **Control de Formato**: Formateo estructurado del contexto
+- **Límites de Contexto**: Marcadores claros para contenido RAG
+- **Integración**: Integración fluida con el flujo de conversación
+
+### 4. Extensiones CLI
+- **Comandos de Conocimiento**: `/knowledge`, `/search`, `/categories`, `/reload`
+- **Controles RAG**: Opciones `--no-rag`, `--knowledge-file`
+- **Soporte de Debug**: Logging detallado de operaciones RAG
+- **Estadísticas**: Análisis e insights de la base de conocimiento
+
+### 5. Características Educativas
+- **Modo Comparación**: Pruebas con/sin RAG
+- **Contenido Ficticio**: Elimina conocimiento previo del LLM
+- **Atribución Clara**: Marcadores visibles de contexto RAG
+- **Framework de Pruebas**: Tests específicos comprensivos de RAG
+
+## Arquitectura Técnica RAG
+
+### Estructura de Componentes Mejorada
 
 ```
-simple-chatbot/
-├── src/simple_chatbot/
-│   ├── __init__.py          # Módulo principal
-│   ├── chatbot.py           # Lógica core del chatbot
-│   ├── cli.py               # Interfaz de línea de comandos
-│   ├── config.py            # Configuración centralizada
-│   ├── llm_client.py        # Cliente para Ollama
-│   └── memory.py            # Gestión de memoria conversacional
-├── tests/                   # Tests unitarios
-├── pyproject.toml          # Configuración del proyecto
-├── README.md               # Documentación de usuario
-└── SPECIFICATIONS.md       # Este archivo
+Simple Chatbot con RAG
+├── Capa de Configuración (config.py) [+ configuración RAG]
+├── Capa Cliente LLM (llm_client.py) [sin cambios]
+├── Gestión de Memoria (memory.py) [sin cambios]
+├── Capa de Conocimiento (knowledge_base.py) [NUEVO]
+├── Lógica Central (chatbot.py) [+ integración RAG]
+└── Capa de Interfaz (cli.py) [+ comandos RAG]
 ```
 
-### Componentes Principales
+### Flujo de Datos RAG
 
-#### 1. **SimpleChatbot** (`chatbot.py`)
-- **Responsabilidad**: Orquestación de la conversación
-- **Funcionalidades**:
-  - Gestión del flujo de conversación
-  - Integración con memoria y cliente LLM
-  - Formateo de prompts
-  - Estadísticas de conversación
-  - Health checks
-
-#### 2. **CLI Interface** (`cli.py`)
-- **Responsabilidad**: Interfaz de usuario
-- **Funcionalidades**:
-  - Interfaz Rich con paneles y colores
-  - Navegación con historial de comandos (↑↓)
-  - Comandos especiales con prefijo `/`
-  - Atajos de teclado (Ctrl+L para limpiar)
-  - Manejo de errores user-friendly
-
-#### 3. **OllamaClient** (`llm_client.py`)
-- **Responsabilidad**: Comunicación con Ollama
-- **Funcionalidades**:
-  - Conexión a Ollama via HTTP
-  - Validación de modelos disponibles
-  - Configuración de parámetros de generación
-  - Manejo de errores de conexión
-
-#### 4. **ConversationMemory** (`memory.py`)
-- **Responsabilidad**: Gestión de memoria conversacional
-- **Funcionalidades**:
-  - Límite configurable de mensajes
-  - Formateo para prompts
-  - Estadísticas de conversación
-  - Reset de historial
-
-#### 5. **ChatbotConfig** (`config.py`)
-- **Responsabilidad**: Configuración centralizada
-- **Funcionalidades**:
-  - Parámetros del modelo (temperatura, max_tokens)
-  - URLs de conexión
-  - Límites de memoria
-  - Prompt del sistema
-
-## 🛠️ Stack Tecnológico
-
-### Core Dependencies
-- **Python**: 3.10+ (type hints modernos)
-- **LangChain**: Framework para aplicaciones LLM
-- **LangChain-Ollama**: Integración específica con Ollama
-- **Pydantic**: Validación de datos y configuración
-
-### CLI & UX
-- **Rich**: Interfaz de terminal avanzada
-- **Click**: Framework para CLI
-- **prompt-toolkit**: Input avanzado con historial
-
-### Development Tools
-- **uv**: Gestión de dependencias y entornos virtuales
-- **ruff**: Linting y formateo de código
-- **pytest**: Framework de testing
-- **mypy**: Type checking estático
-
-## 📋 Funcionalidades Implementadas
-
-### Funcionalidades Core
-- ✅ **Conversación básica**: Chat interactivo con LLMs locales
-- ✅ **Memoria conversacional**: Mantiene contexto de la conversación
-- ✅ **Configuración flexible**: Múltiples parámetros ajustables
-- ✅ **Múltiples modelos**: Soporte para cualquier modelo de Ollama
-
-### Comandos Especiales
-- ✅ `/quit`, `/exit`, `/bye`: Terminar conversación
-- ✅ `/reset`: Limpiar historial de conversación
-- ✅ `/stats`: Mostrar estadísticas de la conversación
-- ✅ `/history`: Ver historial completo
-- ✅ `/help`: Mostrar ayuda
-
-### Características UX
-- ✅ **Interfaz Rica**: Paneles coloreados y formato mejorado
-- ✅ **Historial de comandos**: Navegación con ↑↓
-- ✅ **Shortcuts**: Ctrl+L para limpiar pantalla
-- ✅ **Loading indicators**: Spinners durante procesamiento
-- ✅ **Manejo de errores**: Mensajes informativos
-
-### Opciones de CLI
-- ✅ `--model`: Selección de modelo Ollama
-- ✅ `--temperature`: Control de creatividad (0.0-1.0)
-- ✅ `--max-tokens`: Límite de tokens de respuesta
-- ✅ `--long-responses`: Modo respuestas largas (4000 tokens)
-- ✅ `--ollama-url`: URL personalizada de Ollama
-- ✅ `--memory-limit`: Límite de mensajes en memoria
-- ✅ `--debug`: Logging detallado
-
-## 🔧 Configuración
-
-### Variables de Entorno
-```bash
-OLLAMA_BASE_URL=http://localhost:11434
-MODEL_NAME=llama2
-TEMPERATURE=0.7
-MAX_TOKENS=2000
-CONVERSATION_MEMORY_LIMIT=10
+```
+Consulta Usuario → Extracción Palabras Clave → Búsqueda Conocimiento → Inyección Contexto → LLM → Respuesta Mejorada
 ```
 
-### Configuración Programática
+### Patrones de Diseño Específicos RAG
+
+1. **Patrón Repository**: Abstracción de acceso a datos de la base de conocimiento
+2. **Patrón Strategy**: Diferentes algoritmos de recuperación (extensible)
+3. **Patrón Decorator**: Aumentación de contexto alrededor de respuestas base
+4. **Método Template**: Ejecución estandarizada del pipeline RAG
+5. **Patrón Builder**: Formateo complejo de contexto
+
+## Modelos de Datos RAG
+
+### Modelo de Configuración Mejorado
 ```python
-config = ChatbotConfig(
-    ollama_base_url="http://localhost:11434",
-    model_name="mistral",
-    temperature=0.5,
-    max_tokens=3000,
-    conversation_memory_limit=15
-)
+@dataclass
+class ChatbotConfig:
+    # Configuración base (sin cambios)
+    ollama_base_url: str = "http://localhost:11434"
+    model_name: str = "llama2"
+    temperature: float = 0.3  # Más determinista para RAG
+    max_tokens: int = 2000
+    system_prompt: str = "Eres un asistente útil..."
+    conversation_memory_limit: int = 10
+    
+    # Configuración específica RAG
+    rag_enabled: bool = True
+    knowledge_file: str = "data/knowledge.json"
+    rag_max_results: int = 3
+    rag_min_relevance: float = 0.1
 ```
 
-## 🚀 Instalación y Uso
+### Modelos de Base de Conocimiento
+```python
+@dataclass
+class KnowledgeEntry:
+    keywords: List[str]
+    content: str
+    category: Optional[str] = None
+    metadata: Dict[str, Any] = field(default_factory=dict)
 
-### Instalación Local
+@dataclass
+class RetrievalResult:
+    entry_id: str
+    content: str
+    relevance_score: float
+    matched_keywords: List[str]
+    category: Optional[str] = None
+```
+
+### Esquema JSON de Base de Conocimiento
+```json
+{
+  "entry_id": {
+    "keywords": ["palabra1", "palabra2", "..."],
+    "content": "Información detallada sobre el tema...",
+    "category": "nombre_categoria"
+  }
+}
+```
+
+## Especificaciones API RAG
+
+### Interfaz ChatBot Mejorada
+
+```python
+class SimpleChatbot:
+    # Métodos base (heredados)
+    def __init__(self, config: ChatbotConfig = None)
+    def chat(self, user_input: str) -> str
+    def reset_conversation(self) -> None
+    def is_healthy(self) -> bool
+    
+    # Métodos mejorados (modificados para RAG)
+    def get_conversation_stats(self) -> dict  # + estadísticas RAG
+    def get_conversation_history(self, format_for_display: bool = True) -> str
+    
+    # Nuevos métodos específicos RAG
+    def search_knowledge(self, query: str) -> List[RetrievalResult]
+    def get_knowledge_stats(self) -> dict
+    def get_knowledge_categories(self) -> List[str]
+    def reload_knowledge(self) -> bool
+    
+    # Métodos internos RAG
+    def _get_rag_context(self, user_input: str) -> str
+    def _format_prompt(self, user_input: str) -> str  # Mejorado con RAG
+```
+
+### Interfaz Base de Conocimiento
+
+```python
+class SimpleKnowledgeBase:
+    def __init__(self, knowledge_file: str | Path, enabled: bool = True)
+    def search(self, query: str, max_results: int = 3, min_relevance_score: float = 0.1) -> List[RetrievalResult]
+    def get_entry(self, entry_id: str) -> Optional[KnowledgeEntry]
+    def get_all_entries(self) -> Dict[str, KnowledgeEntry]
+    def get_categories(self) -> List[str]
+    def search_by_category(self, category: str) -> List[KnowledgeEntry]
+    def format_context(self, results: List[RetrievalResult]) -> str
+    def get_stats(self) -> Dict[str, Any]
+    def reload(self) -> None
+    
+    # Métodos internos
+    def _extract_keywords(self, query: str) -> Set[str]
+    def _load_knowledge(self) -> None
+```
+
+## Requisitos de Implementación RAG
+
+### Estructura de Proyecto Mejorada
+```
+simple-chatbot-miniRAG/
+├── src/simple_chatbot/
+│   ├── __init__.py
+│   ├── config.py           # + configuración RAG
+│   ├── llm_client.py       # sin cambios
+│   ├── memory.py           # sin cambios
+│   ├── chatbot.py          # + integración RAG
+│   ├── knowledge_base.py   # NUEVO: Funcionalidad central RAG
+│   └── cli.py              # + comandos RAG
+├── data/                   # NUEVO: Almacenamiento de conocimiento
+│   └── knowledge.json      # NUEVO: Datos universo ficticio
+├── tests/
+│   ├── test_config.py      # actualizado para RAG
+│   ├── test_memory.py      # sin cambios
+│   ├── test_chatbot.py     # + tests RAG
+│   └── test_knowledge_base.py  # NUEVO: tests específicos RAG
+├── pyproject.toml          # versión 0.2.0
+└── README.md               # actualizado para RAG
+```
+
+### Pipeline de Procesamiento RAG
+```python
+def pipeline_rag(consulta_usuario: str) -> str:
+    # 1. Procesamiento de Consulta
+    palabras_clave = extraer_palabras_clave(consulta_usuario)
+    
+    # 2. Recuperación de Conocimiento
+    resultados = base_conocimiento.search(palabras_clave)
+    
+    # 3. Formateo de Contexto
+    contexto = formatear_contexto(resultados)
+    
+    # 4. Aumentación de Prompt
+    prompt_mejorado = inyectar_contexto(contexto, consulta_usuario)
+    
+    # 5. Generación LLM
+    respuesta = llm.generate(prompt_mejorado)
+    
+    return respuesta
+```
+
+### Esquema Universo Aethelgard
+```json
+{
+  "character_aris_thorne": {
+    "keywords": ["Aris Thorne", "aris", "thorne", "xenobotánico", "científico"],
+    "content": "Dr. Aris Thorne es el xenobotánico líder...",
+    "category": "personaje"
+  },
+  "location_aethelgard": {
+    "keywords": ["aethelgard", "planeta", "mundo", "violeta", "xylos"],
+    "content": "Aethelgard es un exoplaneta terrestre...",
+    "category": "ubicación"
+  }
+}
+```
+
+## Aseguramiento de Calidad RAG
+
+### Estrategia de Pruebas Específicas RAG
+- **Tests de Base de Conocimiento**: Carga JSON, funcionalidad de búsqueda, puntuación de relevancia
+- **Tests de Recuperación**: Extracción de palabras clave, filtrado de resultados, formateo de contexto
+- **Tests de Integración**: Integración del pipeline RAG con chatbot
+- **Tests de Comparación**: Verificación de respuestas con/sin RAG
+- **Casos Extremos**: Resultados vacíos, consultas malformadas, conocimiento faltante
+
+### Requisitos de Cobertura de Tests
+- **Tests de Base de Conocimiento**: 27 casos de prueba
+- **Tests de Integración RAG**: 4 casos de prueba
+- **Tests de Configuración Actualizados**: Actualizados para configuración RAG
+- **Cuenta Total de Tests**: 60 tests (100% pasando)
+- **Objetivo de Cobertura**: 100% para componentes RAG
+
+### Métricas de Rendimiento RAG
+- **Precisión de Recuperación**: Resultados relevantes para consultas de prueba
+- **Mejora de Respuesta**: Mejora medible sobre línea base
+- **Cobertura de Palabras Clave**: Coincidencia comprensiva de palabras clave
+- **Calidad de Contexto**: Inyección de contexto bien formateada y relevante
+- **Impacto de Latencia**: Sobrecarga mínima del procesamiento RAG
+
+### Validación Educativa
+- **Contenido Ficticio**: Cero contaminación de conocimiento previo del LLM
+- **Atribución Clara**: Contexto RAG claramente visible en respuestas
+- **Resultados Reproducibles**: Comportamiento consistente para pruebas
+- **Transparencia de Debug**: Detalles observables de operación RAG
+- **Objetivos de Aprendizaje**: Comprensión demostrable de conceptos RAG
+
+## Especificaciones de Despliegue RAG
+
+### Gestión de Base de Conocimiento
+- **Ubicación de Archivo**: `data/knowledge.json` (configurable)
+- **Validación de Formato**: Validación de esquema JSON en carga
+- **Actualizaciones de Contenido**: Capacidad de recarga en tiempo de ejecución (comando `/reload`)
+- **Control de Versiones**: Seguimiento de cambios en base de conocimiento
+- **Estrategia de Respaldo**: Respaldo y recuperación de archivo de conocimiento
+
+### Configuración Específica RAG
 ```bash
-# Clonar y entrar al directorio
-git clone <repo-url>
-cd simple-chatbot
+# Requerido para despliegue RAG
+export RAG_ENABLED="true"
+export RAG_KNOWLEDGE_FILE="data/knowledge.json"
 
-# Instalar dependencias
-uv sync
-
-# Verificar instalación
-uv run chatbot --help
+# Ajuste de rendimiento
+export RAG_MAX_RESULTS="3"
+export RAG_MIN_RELEVANCE="0.1"
+# Nota: CHATBOT_TEMPERATURE tiene 0.3 como valor predeterminado para respuestas deterministas
 ```
 
-### Instalación Global
+### Despliegue Educativo
+- **Contenido Ficticio**: Asegurar que la base de conocimiento no contenga información real
+- **Scripts de Demo**: Consultas preparadas para demostración
+- **Modo Comparación**: Cambio fácil entre modos RAG/no-RAG
+- **Salida de Debug**: Operación RAG visible para aprendizaje
+
+## Consideraciones de Seguridad RAG
+
+### Seguridad de Base de Conocimiento
+- **Validación de Contenido**: Sanitizar entradas de conocimiento
+- **Control de Acceso**: Acceso de solo lectura a archivo de conocimiento
+- **Prevención de Inyección**: Escapar caracteres especiales en contenido
+- **Integridad de Archivo**: Validar estructura JSON y contenido
+
+### Protección contra Inyección de Prompts
+- **Aislamiento de Contexto**: Límites claros alrededor de contenido RAG
+- **Filtrado de Contenido**: Remover contenido potencialmente dañino
+- **Sanitización de Consultas**: Limpiar consultas de usuario antes de procesamiento
+- **Validación de Respuestas**: Monitorear respuestas generadas
+
+### Seguridad Educativa
+- **Contenido Ficticio**: Sin información personal o sensible real
+- **Ambiente Controlado**: Limitado a escenarios educativos
+- **Operación Transparente**: Todas las operaciones RAG visibles para aprendizaje
+- **Cambios Reversibles**: Fácil deshabilitar funcionalidad RAG
+
+## Especificaciones de Interfaz de Línea de Comandos
+
+### Nuevos Comandos RAG
 ```bash
-# Opción 1: pipx (recomendado)
-pipx install .
+# Comandos de prueba RAG
+uv run chatbot --no-rag              # Deshabilitar RAG para comparación
+uv run chatbot --debug               # Mostrar proceso de recuperación RAG
+uv run chatbot --knowledge-file path # Base de conocimiento personalizada
 
-# Opción 2: uv tool
-uv tool install .
+# Comandos RAG interactivos (dentro del chatbot)
+/knowledge                           # Mostrar estadísticas de base de conocimiento
+/search <consulta>                   # Búsqueda manual de conocimiento
+/categories                          # Listar categorías de conocimiento
+/reload                              # Recargar base de conocimiento
 ```
 
-### Uso Básico
-```bash
-# Ejecutar con configuración por defecto
-uv run chatbot
-
-# Usar modelo específico
-uv run chatbot --model mistral --temperature 0.5
-
-# Modo debug para desarrollo
-uv run chatbot --debug
+### Ejemplo de Salida Debug RAG
+```
+[DEBUG] Extrayendo palabras clave de: "¿Quién es el Dr. Aris Thorne?"
+[DEBUG] Palabras clave encontradas: {'quién', 'aris', 'thorne', 'dr'}
+[DEBUG] Búsqueda de conocimiento encontró 1 resultados
+[DEBUG] Resultado principal: character_aris_thorne (relevancia: 0.29)
+[DEBUG] Inyectando contexto RAG en prompt
 ```
 
-## 🧪 Testing
+## Integración con Proyecto Original
 
-### Estructura de Tests
+### Componentes Sin Cambios
+- **Cliente LLM**: Compatibilidad completa con implementación original
+- **Gestión de Memoria**: Manejo idéntico de historial de conversación
+- **Configuración Base**: Todas las configuraciones originales preservadas
+- **Manejo de Errores**: Mismos mecanismos de recuperación de errores
+
+### Componentes Mejorados
+- **Configuración**: Extendida con configuraciones RAG
+- **Chatbot Central**: Integración RAG en formateo de prompts
+- **Interfaz CLI**: Comandos y opciones adicionales
+- **Suite de Pruebas**: Expandida con tests específicos RAG
+
+### Ruta de Migración
+```python
+# Uso original (sigue funcionando)
+chatbot = SimpleChatbot()
+response = chatbot.chat("Hola")
+
+# Nuevo uso RAG
+config = ChatbotConfig(rag_enabled=True)
+chatbot = SimpleChatbot(config)
+response = chatbot.chat("¿Quién es el Dr. Aris Thorne?")
 ```
-tests/
-├── test_chatbot.py     # Tests del componente principal
-├── test_config.py      # Tests de configuración
-└── test_memory.py      # Tests de memoria conversacional
-```
 
-### Ejecutar Tests
-```bash
-# Tests completos
-uv run pytest
+## Consideraciones de Rendimiento
 
-# Con coverage
-uv run pytest --cov=src/simple_chatbot
-```
+### Sobrecarga RAG
+- **Extracción de Palabras Clave**: ~1ms por consulta
+- **Búsqueda de Conocimiento**: ~5ms para base de conocimiento típica
+- **Formateo de Contexto**: ~2ms por resultado
+- **Sobrecarga Total RAG**: <10ms de latencia adicional
 
-## 📊 Métricas y Estadísticas
+### Uso de Memoria
+- **Base de Conocimiento**: ~50KB para universo Aethelgard
+- **Índice de Búsqueda**: Huella de memoria mínima
+- **Cache de Contexto**: Opcional para optimización de rendimiento
 
-El chatbot proporciona las siguientes métricas:
-- **Total messages**: Número total de mensajes intercambiados
-- **User messages**: Mensajes del usuario
-- **Bot messages**: Respuestas del bot
-- **Average message length**: Longitud promedio de mensajes
-- **Conversation duration**: Duración de la sesión
+### Escalabilidad
+- **Entradas de Conocimiento**: Probado hasta 100 entradas
+- **Consultas Concurrentes**: Diseño de hilo único
+- **Límites de Tamaño de Archivo**: Recomendado <1MB para archivo JSON
 
-## 🔐 Seguridad y Consideraciones
+## Extensiones Futuras
 
-### Seguridad
-- **Datos locales**: Todos los datos permanecen en el sistema local
-- **Sin telemetría**: No se envían datos a servicios externos
-- **Validación de entrada**: Sanitización básica de inputs
+### Mejoras Potenciales
+- **Embeddings Vectoriales**: Búsqueda semántica avanzada
+- **Múltiples Fuentes de Conocimiento**: Soporte para múltiples archivos
+- **Capa de Cache**: Cache en memoria de resultados de búsqueda
+- **Actualizaciones en Tiempo Real**: Monitoreo de sistema de archivos para cambios
+- **Interfaz Web**: Exploración RAG basada en navegador
 
-### Limitaciones
-- **Dependencia de Ollama**: Requiere Ollama ejecutándose localmente
-- **Memoria volátil**: El historial se pierde al cerrar la aplicación
-- **Sin persistencia**: No hay almacenamiento permanente de conversaciones
-
-## 📈 Posibles Mejoras Futuras
-
-### Funcionalidades
-- [ ] **Persistencia**: Guardar conversaciones en base de datos
-- [ ] **Múltiples sesiones**: Gestionar varias conversaciones
-- [ ] **Export/Import**: Exportar conversaciones a archivos
-- [ ] **Configuración por archivo**: Archivos de configuración TOML/YAML
-- [ ] **Plugins**: Sistema de extensiones
-
-### Técnicas
-- [ ] **Async/await**: Mejorar concurrencia
-- [ ] **Streaming**: Respuestas en tiempo real
-- [ ] **Rate limiting**: Límites de uso
-- [ ] **Metrics**: Métricas avanzadas con Prometheus
-- [ ] **Web UI**: Interfaz web opcional
-
-## 🤝 Contribuciones
-
-### Estándares de Código
-- **Type hints**: Obligatorios en todas las funciones
-- **Docstrings**: Google style para todas las funciones públicas
-- **Ruff**: Linting y formateo automático
-- **Tests**: Coverage mínimo del 90%
-
-### Process de Desarrollo
-1. **Fork** del repositorio
-2. **Branch** para nueva funcionalidad
-3. **Tests** para cualquier cambio
-4. **PR** con descripción detallada
-
-## 📝 Versionado
-
-El proyecto sigue [Semantic Versioning](https://semver.org/):
-- **MAJOR**: Cambios incompatibles en la API
-- **MINOR**: Nuevas funcionalidades compatible
-- **PATCH**: Bug fixes compatibles
-
-**Versión actual**: 0.1.0
-
----
-
-## 📄 Licencia
-
-Este proyecto está diseñado con fines educativos y de demostración.
-
-**Autor**: Juanje Ojeda (juanje@redhat.com)
-**Fecha**: Julio 2025
+### Progresiones Educativas
+1. **Actual**: RAG simple basado en palabras clave
+2. **Intermedio**: Puntuación TF-IDF
+3. **Avanzado**: Búsqueda de similitud vectorial
+4. **Experto**: Integración de conocimiento multi-modal

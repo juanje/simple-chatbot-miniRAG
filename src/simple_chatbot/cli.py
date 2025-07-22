@@ -68,19 +68,24 @@ def setup_logging(debug: bool = False) -> None:
 
 def display_welcome() -> None:
     """Display welcome message and instructions."""
-    welcome_text = Text("Simple Chatbot", style="bold blue")
+    welcome_text = Text("Simple Chatbot with RAG", style="bold blue")
     welcome_panel = Panel(
         Text.assemble(
             welcome_text,
             "\n\n",
-            "A simple chatbot using LangChain and Ollama\n",
+            "A simple chatbot using LangChain, Ollama and RAG\n",
             "Type '/quit', '/exit', or '/bye' to end the conversation\n",
             "Type '/reset' to clear conversation history\n",
             "Type '/stats' to see conversation statistics\n",
             "Type '/history' to see conversation history\n",
+            "Type '/knowledge' to see knowledge base info\n",
+            "Type '/search <query>' to search the knowledge base\n",
+            "Type '/categories' to see available knowledge categories\n",
+            "Type '/reload' to reload the knowledge base\n",
             "Type '/help' to see this message again\n\n",
             "💡 Use ↑↓ arrow keys to navigate command history\n",
-            "💡 Use Ctrl+L to clear screen",
+            "💡 Use Ctrl+L to clear screen\n",
+            "💡 RAG will automatically enhance responses with relevant knowledge",
             style="white",
         ),
         title="Welcome",
@@ -91,19 +96,94 @@ def display_welcome() -> None:
 
 
 def display_stats(chatbot: SimpleChatbot) -> None:
-    """Display conversation statistics.
+    """Display conversation and RAG statistics.
 
     Args:
         chatbot: The chatbot instance
     """
     stats = chatbot.get_conversation_stats()
 
-    table = Table(title="Conversation Statistics")
+    table = Table(title="Conversation & RAG Statistics")
     table.add_column("Metric", style="cyan")
     table.add_column("Value", style="magenta")
 
     for key, value in stats.items():
         table.add_row(key.replace("_", " ").title(), str(value))
+
+    console.print(table)
+    console.print()
+
+
+def display_knowledge_info(chatbot: SimpleChatbot) -> None:
+    """Display knowledge base information.
+
+    Args:
+        chatbot: The chatbot instance
+    """
+    kb_stats = chatbot.get_knowledge_stats()
+
+    if not kb_stats.get("enabled", False):
+        console.print("🚫 RAG functionality is disabled", style="yellow")
+        console.print()
+        return
+
+    table = Table(title="Knowledge Base Information")
+    table.add_column("Metric", style="cyan")
+    table.add_column("Value", style="magenta")
+
+    for key, value in kb_stats.items():
+        if key == "categories" and isinstance(value, list):
+            value = ", ".join(value) if value else "None"
+        table.add_row(key.replace("_", " ").title(), str(value))
+
+    console.print(table)
+    console.print()
+
+
+def display_search_results(results: list) -> None:
+    """Display knowledge search results.
+
+    Args:
+        results: List of search results
+    """
+    if not results:
+        console.print("🔍 No results found", style="yellow")
+        console.print()
+        return
+
+    for i, result in enumerate(results, 1):
+        result_panel = Panel(
+            Text.assemble(
+                f"Relevance: {result.relevance_score:.2f}\n",
+                f"Keywords: {', '.join(result.matched_keywords)}\n",
+                f"Category: {result.category or 'None'}\n\n",
+                result.content,
+                style="white",
+            ),
+            title=f"Result {i}: {result.entry_id}",
+            border_style="cyan",
+        )
+        console.print(result_panel)
+
+    console.print()
+
+
+def display_categories(categories: list[str]) -> None:
+    """Display available knowledge categories.
+
+    Args:
+        categories: List of category names
+    """
+    if not categories:
+        console.print("📂 No categories available", style="yellow")
+        console.print()
+        return
+
+    table = Table(title="Knowledge Categories")
+    table.add_column("Category", style="cyan")
+
+    for category in categories:
+        table.add_row(category)
 
     console.print(table)
     console.print()
@@ -160,6 +240,16 @@ def display_bot_response(response: str) -> None:
     is_flag=True,
     help="Allow very long responses (sets max-tokens to 4000)",
 )
+@click.option(
+    "--no-rag",
+    is_flag=True,
+    help="Disable RAG functionality (default: RAG enabled)",
+)
+@click.option(
+    "--knowledge-file",
+    default="data/knowledge.json",
+    help="Path to knowledge base file (default: data/knowledge.json)",
+)
 def main(
     model: str,
     temperature: float,
@@ -168,10 +258,13 @@ def main(
     debug: bool,
     memory_limit: int,
     long_responses: bool,
+    no_rag: bool,
+    knowledge_file: str,
 ) -> None:
-    """Simple Chatbot CLI - A LangChain and Ollama powered chatbot.
+    """Simple Chatbot CLI - A LangChain, Ollama and RAG powered chatbot.
 
-    This chatbot uses local LLMs through Ollama for conversation.
+    This chatbot uses local LLMs through Ollama for conversation with optional
+    RAG (Retrieval-Augmented Generation) to enhance responses with relevant knowledge.
     Make sure Ollama is running and the specified model is available.
     """
     # Setup logging
@@ -193,6 +286,8 @@ def main(
         temperature=temperature,
         max_tokens=max_tokens,
         conversation_memory_limit=memory_limit,
+        rag_enabled=not no_rag,
+        knowledge_file=knowledge_file,
     )
 
     # Display welcome message
@@ -256,6 +351,32 @@ def main(
                         console.print("No conversation history yet.", style="italic")
                     console.print()
                     continue
+                elif user_input.lower() == "/knowledge":
+                    display_knowledge_info(chatbot)
+                    continue
+                elif user_input.lower().startswith("/search "):
+                    search_query = user_input[8:].strip()  # Remove "/search " prefix
+                    if search_query:
+                        with console.status("[bold green]Searching knowledge base...", spinner="dots"):
+                            results = chatbot.search_knowledge(search_query)
+                        display_search_results(results)
+                    else:
+                        console.print("💡 Usage: /search <query>", style="yellow")
+                        console.print()
+                    continue
+                elif user_input.lower() == "/categories":
+                    categories = chatbot.get_knowledge_categories()
+                    display_categories(categories)
+                    continue
+                elif user_input.lower() == "/reload":
+                    with console.status("[bold green]Reloading knowledge base...", spinner="dots"):
+                        success = chatbot.reload_knowledge()
+                    if success:
+                        console.print("✅ Knowledge base reloaded successfully!", style="bold green")
+                    else:
+                        console.print("❌ Failed to reload knowledge base", style="red")
+                    console.print()
+                    continue
                 elif user_input.lower() == "/help":
                     display_welcome()
                     continue
@@ -272,8 +393,11 @@ def main(
                     "reset",
                     "stats",
                     "history",
+                    "knowledge",
+                    "categories",
+                    "reload",
                     "help",
-                ]:
+                ] or user_input.lower().startswith("search "):
                     console.print(
                         f"💡 Did you mean '/{user_input.lower()}'? "
                         "Commands now require a '/' prefix.",
